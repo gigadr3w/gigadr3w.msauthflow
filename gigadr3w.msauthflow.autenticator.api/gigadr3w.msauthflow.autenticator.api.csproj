@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>37b4101d-d278-4ca9-90b8-ba005207ccfc</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.26" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\gigadr3w.msauthflow.authenticator.iterator\gigadr3w.msauthflow.authenticator.iterator.csproj" />
+    <ProjectReference Include="..\gigadr3w.msauthflow.common\gigadr3w.msauthflow.common.csproj" />
+    <ProjectReference Include="..\gigadr3w.msauthflow.dataaccess.mysql\gigadr3w.msauthflow.dataaccess.mysql.csproj" />
+    <ProjectReference Include="..\gigadr3w.msauthflow.dataaccess\gigadr3w.msauthflow.dataaccess.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Responses\" />
+  </ItemGroup>
+
+</Project>
