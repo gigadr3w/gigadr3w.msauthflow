@@ -19,13 +19,16 @@ namespace gigadr3w.msauthflow.autenticator.api
             // Read configurations
             MySqlDbContextConfiguration mysql_configuration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
 
+            // Adding specific mysql-dbcontext
             builder.Services.AddDbContext<DataContext>(options =>
                 options.UseMySql(mysql_configuration.ConnectionString, ServerVersion.AutoDetect(mysql_configuration.ConnectionString))
             );
 
-            builder.Services.AddScoped<IDataAccess<User>, MySQLDataAccess<User>>();
+            // Adding generic service for dataaccess (it uses repository pattern)
+            builder.Services.AddScoped(typeof(IDataAccess<>), typeof(MySQLDataAccess<>));
 
-            builder.Services.AddScoped<IAutehticatorService, AutehticatorService>();
+            // Authentication service
+            builder.Services.AddScoped<IAuthenticatorService, AuthenticatorService>();
 
             // Add services to the container.
             builder.Services.AddControllers();

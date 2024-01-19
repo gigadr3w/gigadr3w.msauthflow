@@ -9,12 +9,19 @@ namespace gigadr3w.msauthflow.dataaccess.mysql.Contexes
     {
         internal DbSet<User> Users { get; set; }
         internal DbSet<Role> Roles { get; set; }
+        internal DbSet<Item> Items { get; set; } 
 
         public DataContext() { }
         public DataContext(DbContextOptions<DataContext> opts) : base(opts) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            //Execution example
+            //-->Powershell
+            //$env:ASPNETCORE_ENVIRONMENT="Development"; dotnet ef migrations add AddItems --startup-project gigadr3w.msauthflow.dataaccess.mysql
+            //-->Linux bash
+            //ASPNETCORE_ENVIRONMENT=Development dotnet ef migrations remove 
+
             if (!optionsBuilder.IsConfigured)
             {
                 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder ()
@@ -27,6 +34,13 @@ namespace gigadr3w.msauthflow.dataaccess.mysql.Contexes
                     Console.WriteLine("Using Development MySQL Connection String");
                     configurationBuilder.AddJsonFile("appsettings.Development.json");
                 }
+                else 
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("Using Release MySQL Connection String");
+                }
+                // Fallback from environment variables
+                configurationBuilder.AddEnvironmentVariables();
                 IConfiguration configuration = configurationBuilder.Build();
 
                 string connectionString = configuration.GetConnectionString("Default")
@@ -39,15 +53,15 @@ namespace gigadr3w.msauthflow.dataaccess.mysql.Contexes
             }
 
             base.OnConfiguring(optionsBuilder);
-            //TODO - includere?
+            //TODO - include?
             //optionsBuilder.UseMemoryCache();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Fluent API : map entities, don't use arguments mapping!
+            //Fluent API
 
-            //tables
+            //defining models
 
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id);
@@ -74,7 +88,20 @@ namespace gigadr3w.msauthflow.dataaccess.mysql.Contexes
                 .IsRequired()
                 .HasMaxLength(150);
 
-            //records
+            modelBuilder.Entity<Item>()
+                .HasKey(i => i.Id);
+            modelBuilder.Entity<Item>()
+                .Property(i => i.Name)
+                .IsRequired()
+                .HasMaxLength(50);
+            modelBuilder.Entity<Item>()
+                .Property (i => i.Description)
+                .HasMaxLength(150);
+            modelBuilder.Entity<Item>()
+                .Property( i => i.Value)
+                .HasDefaultValue(0);
+
+            //data seeding
 
             modelBuilder.Entity<Role>()
                 .HasData(

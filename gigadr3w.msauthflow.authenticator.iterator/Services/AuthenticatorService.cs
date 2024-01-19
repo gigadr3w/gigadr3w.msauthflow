@@ -2,19 +2,20 @@
 using gigadr3w.msauthflow.common.Extensions;
 using gigadr3w.msauthflow.dataaccess.Interfaces;
 using gigadr3w.msauthflow.entities;
+using System.Linq.Expressions;
 
 namespace gigadr3w.msauthflow.authenticator.iterator.Services
 {
-    public interface IAutehticatorService
+    public interface IAuthenticatorService
     {
         Task<UserModel> Authenticate(UserModel model);
     }
 
-    public class AutehticatorService : IAutehticatorService
+    public class AuthenticatorService : IAuthenticatorService
     {
         private readonly IDataAccess<User> _users;
 
-        public AutehticatorService(IDataAccess<User> users)
+        public AuthenticatorService(IDataAccess<User> users)
             => _users = users;
 
         /// <summary>
@@ -24,7 +25,9 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
         /// <returns></returns>
         public async Task<UserModel> Authenticate(UserModel model)
         {
-            IQueryable<User?> users = await _users.Where(u => u.Email == model.Email);
+            // Including Roles
+            IQueryable<User?> users = await _users.Where(u => u.Email == model.Email, new List<Expression<Func<User, object>>> { u => u.Roles });
+            
             if(users.Count() > 0) 
             {
                 User? user = users.First();
@@ -34,7 +37,7 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
                 }
                 else 
                 {
-                    if (user.Password != user.Password.Hash256()) 
+                    if (user.Password != model.Password.Hash256()) 
                     {
                         model.UnhautorizedMessage = "Password mismatch";
                     }
