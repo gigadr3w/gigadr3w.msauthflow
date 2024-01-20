@@ -18,16 +18,17 @@ namespace gigadr3w.msauthflow.autenticator.api
             var builder = WebApplication.CreateBuilder(args);
 
             // Read configurations
-            MySqlDbContextConfiguration mysql_configuration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
+            MySqlDbContextConfiguration mysqlConfiguration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
+            LoggingConfiguration loggingConfiguration = builder.Configuration.GetSection("Logging:LogLevel").Get<LoggingConfiguration>();
 
-            ConsoleLoggerProvider consoleLoggerProvider = new ConsoleLoggerProvider();
+            ConsoleLoggerProvider consoleLoggerProvider = new(loggingConfiguration);
 
             // Adding specific mysql-dbcontext
             builder.Services.AddDbContext<DataContext>(options =>
             {
                 //specify domain
-                options.UseMySql(mysql_configuration.ConnectionString, 
-                    ServerVersion.AutoDetect(mysql_configuration.ConnectionString));
+                options.UseMySql(mysqlConfiguration.ConnectionString, 
+                    ServerVersion.AutoDetect(mysqlConfiguration.ConnectionString));
 
                 //add my own logger provider
                 options.UseLoggerFactory(

@@ -9,11 +9,11 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
     [Route("api/[controller]")]
     public class AuthenticatorController : Controller
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<AuthenticatorController> _logger;
         private readonly IAuthenticatorService _autehticator;
 
         public AuthenticatorController(IAuthenticatorService autehticator,
-                                        ILogger logger)
+                                        ILogger<AuthenticatorController> logger)
             => (_autehticator, _logger) = (autehticator, logger);
 
         [AllowAnonymous]

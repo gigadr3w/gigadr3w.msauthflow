@@ -1,11 +1,17 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using gigadr3w.msauthflow.common.Configurations;
 
 namespace gigadr3w.msauthflow.common.Loggers
 {
     public class ConsoleLoggerProvider : ILoggerProvider
     {
+        private readonly LoggingConfiguration _configuration;
+        public ConsoleLoggerProvider(LoggingConfiguration configuration)
+            => _configuration = configuration;
+
         public ILogger CreateLogger(string categoryName)
-            => new ConsoleLogger();
+            => new ConsoleLogger(_configuration);
 
         //disposes unmanaged resources
         public void Dispose() { }
@@ -13,16 +19,19 @@ namespace gigadr3w.msauthflow.common.Loggers
 
     public class ConsoleLogger : ILogger
     {
-        //return this class 
+        private readonly LoggingConfiguration _configuration;
+
+        public ConsoleLogger(LoggingConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
         public IDisposable BeginScope<TState>(TState state)
         {
             return null;
         }
 
         public bool IsEnabled(LogLevel logLevel)
-        {
-            throw new NotImplementedException();
-        }
+            => logLevel >= _configuration.Default;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -30,7 +39,7 @@ namespace gigadr3w.msauthflow.common.Loggers
 
             if (state != null)
             {
-                message = string.Format("{0} - State {1}", message, state.ToString());
+                message = string.Format("{0} - {1}", message, state.ToString());
             }
 
             if (exception != null)
