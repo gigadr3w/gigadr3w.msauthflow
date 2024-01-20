@@ -1,6 +1,7 @@
 
 using gigadr3w.msauthflow.authenticator.iterator.Services;
 using gigadr3w.msauthflow.common.Configurations;
+using gigadr3w.msauthflow.common.Loggers;
 using gigadr3w.msauthflow.dataaccess.Interfaces;
 using gigadr3w.msauthflow.dataaccess.mysql;
 using gigadr3w.msauthflow.dataaccess.mysql.Contexes;
@@ -19,10 +20,23 @@ namespace gigadr3w.msauthflow.autenticator.api
             // Read configurations
             MySqlDbContextConfiguration mysql_configuration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
 
+            ConsoleLoggerProvider consoleLoggerProvider = new ConsoleLoggerProvider();
+
             // Adding specific mysql-dbcontext
             builder.Services.AddDbContext<DataContext>(options =>
-                options.UseMySql(mysql_configuration.ConnectionString, ServerVersion.AutoDetect(mysql_configuration.ConnectionString))
-            );
+            {
+                //specify domain
+                options.UseMySql(mysql_configuration.ConnectionString, 
+                    ServerVersion.AutoDetect(mysql_configuration.ConnectionString));
+
+                //add my own logger provider
+                options.UseLoggerFactory(
+                    LoggerFactory.Create(builder => builder.AddProvider(consoleLoggerProvider))
+                );
+            });
+
+            //add my own logger provider
+            builder.Services.AddLogging(builder => builder.AddProvider(consoleLoggerProvider));
 
             // Adding generic service for dataaccess (it uses repository pattern)
             builder.Services.AddScoped(typeof(IDataAccess<>), typeof(MySQLDataAccess<>));

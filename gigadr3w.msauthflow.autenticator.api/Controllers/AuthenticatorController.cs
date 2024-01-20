@@ -9,15 +9,19 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
     [Route("api/[controller]")]
     public class AuthenticatorController : Controller
     {
+        private readonly ILogger _logger;
         private readonly IAuthenticatorService _autehticator;
 
-        public AuthenticatorController(IAuthenticatorService autehticator)
-            => _autehticator = autehticator;
+        public AuthenticatorController(IAuthenticatorService autehticator,
+                                        ILogger logger)
+            => (_autehticator, _logger) = (autehticator, logger);
 
         [AllowAnonymous]
         [Route("Authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] AuthenticateRequest request)
         {
+            _logger.LogInformation("Authentication request required");
+
             UserModel userModel = await _autehticator.Authenticate(new UserModel { Email = request.Email, Password = request.Password });
 
             if (userModel.IsAuthorized) 
