@@ -1,4 +1,5 @@
 
+using gigadr3w.msauthflow.autenticator.api.Filters;
 using gigadr3w.msauthflow.authenticator.iterator.Services;
 using gigadr3w.msauthflow.common.Configurations;
 using gigadr3w.msauthflow.common.Loggers;
@@ -50,7 +51,10 @@ namespace gigadr3w.msauthflow.autenticator.api
             builder.Services.AddScoped<IAuthenticatorService, AuthenticatorService>();
 
             // Add services to the container.
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<ExceptionHandlerFilter>();
+            });
 
             // Add Swagger
             builder.Services.AddSwaggerGen(configuration =>
