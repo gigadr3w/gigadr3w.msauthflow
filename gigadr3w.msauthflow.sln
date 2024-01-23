@@ -13,7 +13,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gigadr3w.msauthflow.common"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gigadr3w.msauthflow.dataaccess", "gigadr3w.msauthflow.dataaccess\gigadr3w.msauthflow.dataaccess.csproj", "{214E5D20-6C5F-48EF-AFF2-7CC742BBC97F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gigadr3w.msauthflow.dataaccess.mysql", "gigadr3w.msauthflow.dataaccess.mysql\gigadr3w.msauthflow.dataaccess.mysql.csproj", "{D6191A24-A521-4F00-8C0B-A1EC2E3E5898}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "gigadr3w.msauthflow.dataaccess.mysql", "gigadr3w.msauthflow.dataaccess.mysql\gigadr3w.msauthflow.dataaccess.mysql.csproj", "{D6191A24-A521-4F00-8C0B-A1EC2E3E5898}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gigadr3w.msauthflow.mysql", "gigadr3w.msauthflow.mysql", "{52A0F503-85A7-44F2-9EE8-649E00E2F880}"
+	ProjectSection(SolutionItems) = preProject
+		..\gigadr3w.msmysql\Dockerfile = ..\gigadr3w.msmysql\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-entrypoint-initdb.d", "docker-entrypoint-initdb.d", "{B438A699-10EB-417A-8B2C-3BAA6F4B72F5}"
+	ProjectSection(SolutionItems) = preProject
+		..\gigadr3w.msmysql\docker-entrypoint-initdb.d\dump_file.sql = ..\gigadr3w.msmysql\docker-entrypoint-initdb.d\dump_file.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +58,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B438A699-10EB-417A-8B2C-3BAA6F4B72F5} = {52A0F503-85A7-44F2-9EE8-649E00E2F880}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {120F1509-A3AC-460D-8411-15904A5A7C4F}

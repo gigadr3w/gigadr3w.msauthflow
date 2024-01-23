@@ -8,6 +8,7 @@ using gigadr3w.msauthflow.dataaccess.mysql.Contexes;
 using gigadr3w.msauthflow.entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.OpenApi.Models;
 
 namespace gigadr3w.msauthflow.autenticator.api
 {
@@ -27,7 +28,7 @@ namespace gigadr3w.msauthflow.autenticator.api
             builder.Services.AddDbContext<DataContext>(options =>
             {
                 //specify domain
-                options.UseMySql(mysqlConfiguration.ConnectionString, 
+                options.UseMySql(mysqlConfiguration.ConnectionString,
                     ServerVersion.AutoDetect(mysqlConfiguration.ConnectionString));
 
                 //add my own logger provider
@@ -42,11 +43,21 @@ namespace gigadr3w.msauthflow.autenticator.api
             // Adding generic service for dataaccess (it uses repository pattern)
             builder.Services.AddScoped(typeof(IDataAccess<>), typeof(MySQLDataAccess<>));
 
+            //local memory cache for request throttling, analysis etc.
+            builder.Services.AddMemoryCache();
+
             // Authentication service
             builder.Services.AddScoped<IAuthenticatorService, AuthenticatorService>();
 
             // Add services to the container.
             builder.Services.AddControllers();
+
+            // Add Swagger
+            builder.Services.AddSwaggerGen(configuration =>
+            {
+                configuration.SwaggerDoc("v1", new OpenApiInfo { Title = "API Authorizer", Version = "v1" });
+                configuration.EnableAnnotations();
+            });
 
             var app = builder.Build();
 
@@ -56,6 +67,18 @@ namespace gigadr3w.msauthflow.autenticator.api
 
             app.UseAuthorization();
 
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            //ModelBinding reads content before action filter. 
+            //Here, to restore the buffer 
+            //NOTICE I  - before the controller/endpoint mapping.
+            //NOTICE II - here there is only one endpoint... remember that this operation will be applied on all requests
+            app.Use(async (context, next) =>
+            {
+                context.Request.EnableBuffering();
+                await next();
+            });
 
             app.MapControllers();
 

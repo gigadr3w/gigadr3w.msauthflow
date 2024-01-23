@@ -21,10 +21,16 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
         /// <summary>
         /// Throw unauthorized exception
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="model">User model</param>
         /// <returns></returns>
         public async Task<UserModel> Authenticate(UserModel model)
         {
+            if(model.Password == null || model.Email == null) 
+            {
+                model.UnhautorizedMessage = "Email and password are mandatory fields";
+                return model;
+            }
+
             // Including Roles
             IQueryable<User?> users = await _users.Where(u => u.Email == model.Email, new List<Expression<Func<User, object>>> { u => u.Roles });
             
