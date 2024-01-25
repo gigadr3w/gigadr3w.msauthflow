@@ -2,9 +2,9 @@
 
 namespace gigadr3w.msauthflow.authenticator.iterator.Models
 {
-    public class JwtTokenModel
+    public class JwtGenerationModel
     {
-        public List<Claim> Claims { get; set; }
+        public ICollection<Claim> Claims { get; set; }
 
         public TimeSpan ExpirationTime { get; set; }
     }

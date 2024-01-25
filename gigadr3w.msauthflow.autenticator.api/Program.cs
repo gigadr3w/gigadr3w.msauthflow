@@ -1,14 +1,13 @@
 
 using gigadr3w.msauthflow.autenticator.api.Filters;
+using gigadr3w.msauthflow.authenticator.iterator.Configurations;
 using gigadr3w.msauthflow.authenticator.iterator.Services;
 using gigadr3w.msauthflow.common.Configurations;
 using gigadr3w.msauthflow.common.Loggers;
 using gigadr3w.msauthflow.dataaccess.Interfaces;
 using gigadr3w.msauthflow.dataaccess.mysql;
 using gigadr3w.msauthflow.dataaccess.mysql.Contexes;
-using gigadr3w.msauthflow.entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.OpenApi.Models;
 
 namespace gigadr3w.msauthflow.autenticator.api
@@ -21,6 +20,7 @@ namespace gigadr3w.msauthflow.autenticator.api
 
             // Read configurations
             MySqlDbContextConfiguration mysqlConfiguration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
+            JwtTokenConfiguration jwtConfirutation = builder.Configuration.GetSection(nameof(JwtTokenConfiguration)).Get<JwtTokenConfiguration>();
             LoggingConfiguration loggingConfiguration = builder.Configuration.GetSection("Logging:LogLevel").Get<LoggingConfiguration>();
 
             ConsoleLoggerProvider consoleLoggerProvider = new(loggingConfiguration);
@@ -48,11 +48,15 @@ namespace gigadr3w.msauthflow.autenticator.api
             builder.Services.AddMemoryCache();
 
             // Authentication service
-            builder.Services.AddScoped<IAuthenticatorService, AuthenticatorService>();
+            builder.Services.AddScoped<ILoginService, LoginService>();
+
+            //JwtToken generator service
+            builder.Services.AddScoped<IJwtTokenService>(instance => new JwtTokenService(jwtConfirutation));
 
             // Add services to the container.
             builder.Services.AddControllers(options =>
             {
+                // Add exception filter
                 options.Filters.Add<ExceptionHandlerFilter>();
             });
 

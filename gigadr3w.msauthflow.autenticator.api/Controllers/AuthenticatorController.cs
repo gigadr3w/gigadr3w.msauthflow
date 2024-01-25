@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Immutable;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace gigadr3w.msauthflow.autenticator.api.Controllers
 {
@@ -14,11 +17,14 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
     public class AuthenticatorController : Controller
     {
         private readonly ILogger<AuthenticatorController> _logger;
-        private readonly IAuthenticatorService _autehticator;
+        private readonly ILoginService _autehticator;
+        private readonly IJwtTokenService _jwtTokenService;
 
-        public AuthenticatorController(IAuthenticatorService autehticator,
+
+        public AuthenticatorController(ILoginService autehticator,
+                                        IJwtTokenService jwtTokenService,
                                         ILogger<AuthenticatorController> logger)
-            => (_autehticator, _logger) = (autehticator, logger);
+            => (_autehticator, _jwtTokenService, _logger) = (autehticator, jwtTokenService, logger);
 
         [HttpPost]
         [AllowAnonymous]
@@ -38,9 +44,20 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
 
             UserModel userModel = await _autehticator.Authenticate(new UserModel { Email = request.Email, Password = request.Password });
 
-            if (userModel.IsAuthorized) 
+            if (userModel.IsAuthorized)
             {
-                return Ok();
+                List<Claim> claims = new() { new Claim(ClaimTypes.Email, userModel.Email) };
+                claims.AddRange(userModel.Roles.Select(r => new Claim(ClaimTypes.Role, r.Name)));
+
+                JwtGenerationModel jwtTokenModel = new()
+                {
+                    Claims = claims,
+                    ExpirationTime = TimeSpan.FromDays(1)
+                };
+
+                string jwt = _jwtTokenService.GenerateToken(jwtTokenModel);
+
+                return Ok(new AuthenticateResponse { ApiKey = jwt, Email = request.Email });
             }
             else
             {

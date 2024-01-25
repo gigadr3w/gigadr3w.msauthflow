@@ -2,9 +2,14 @@
 {
     public class JwtTokenConfiguration
     {
+        public const string DEFAULT_SCHEMA = "ApiKey";
         /// <summary>
         /// Used for token encryption
         /// </summary>
         public string SecretKey { get; set; }
+        /// <summary>
+        /// Api Key Header Name
+        /// </summary>
+        public string ApiKeyHeader { get; set; } = "ApiKey";
     }
 }

@@ -21,8 +21,6 @@ namespace gigadr3w.msauthflow.autenticator.api.Filters.Attributes
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            throw new Exception("Ciccinoooooo");
-
             string email = await GetEmail(context);
 
             IServiceProvider serviceProvider = context.HttpContext.RequestServices;

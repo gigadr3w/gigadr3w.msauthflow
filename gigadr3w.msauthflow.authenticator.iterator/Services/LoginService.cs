@@ -6,16 +6,16 @@ using System.Linq.Expressions;
 
 namespace gigadr3w.msauthflow.authenticator.iterator.Services
 {
-    public interface IAuthenticatorService
+    public interface ILoginService
     {
         Task<UserModel> Authenticate(UserModel model);
     }
 
-    public class AuthenticatorService : IAuthenticatorService
+    public class LoginService : ILoginService
     {
         private readonly IDataAccess<User> _users;
 
-        public AuthenticatorService(IDataAccess<User> users)
+        public LoginService(IDataAccess<User> users)
             => _users = users;
 
         /// <summary>
