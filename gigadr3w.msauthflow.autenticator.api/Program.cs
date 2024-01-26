@@ -1,12 +1,19 @@
 
 using gigadr3w.msauthflow.autenticator.api.Filters;
 using gigadr3w.msauthflow.authenticator.iterator.Configurations;
+using gigadr3w.msauthflow.authenticator.iterator.Filters;
+using gigadr3w.msauthflow.authenticator.iterator.Handlers;
 using gigadr3w.msauthflow.authenticator.iterator.Services;
 using gigadr3w.msauthflow.common.Configurations;
 using gigadr3w.msauthflow.common.Loggers;
 using gigadr3w.msauthflow.dataaccess.Interfaces;
 using gigadr3w.msauthflow.dataaccess.mysql;
+using gigadr3w.msauthflow.dataaccess.mysql.Configuration;
 using gigadr3w.msauthflow.dataaccess.mysql.Contexes;
+using gigadr3w.msauthflow.sharedcache.Interfaces;
+using gigadr3w.msauthflow.sharedcache.redis;
+using gigadr3w.msauthflow.sharedcache.redis.Configuration;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -19,11 +26,16 @@ namespace gigadr3w.msauthflow.autenticator.api
             var builder = WebApplication.CreateBuilder(args);
 
             // Read configurations
-            MySqlDbContextConfiguration mysqlConfiguration = builder.Configuration.GetSection(nameof(MySqlDbContextConfiguration)).Get<MySqlDbContextConfiguration>();
-            JwtTokenConfiguration jwtConfirutation = builder.Configuration.GetSection(nameof(JwtTokenConfiguration)).Get<JwtTokenConfiguration>();
+            MySqlConfiguration mysqlConfiguration = builder.Configuration.GetSection(nameof(MySqlConfiguration)).Get<MySqlConfiguration>();
+
             LoggingConfiguration loggingConfiguration = builder.Configuration.GetSection("Logging:LogLevel").Get<LoggingConfiguration>();
 
             ConsoleLoggerProvider consoleLoggerProvider = new(loggingConfiguration);
+
+            // Adding configurations
+            builder.Services.Configure<JwtTokenConfiguration>(builder.Configuration.GetSection(nameof(JwtTokenConfiguration)));
+
+            builder.Services.Configure<RedisConfiguration>(builder.Configuration.GetSection(nameof(RedisConfiguration)));
 
             // Adding specific mysql-dbcontext
             builder.Services.AddDbContext<DataContext>(options =>
@@ -44,14 +56,25 @@ namespace gigadr3w.msauthflow.autenticator.api
             // Adding generic service for dataaccess (it uses repository pattern)
             builder.Services.AddScoped(typeof(IDataAccess<>), typeof(MySQLDataAccess<>));
 
+            // Adding shared cache client service 
+            builder.Services.AddScoped<ISharedCache, RedisSharedCache>();
+
             //local memory cache for request throttling, analysis etc.
             builder.Services.AddMemoryCache();
 
             // Authentication service
             builder.Services.AddScoped<ILoginService, LoginService>();
 
-            //JwtToken generator service
-            builder.Services.AddScoped<IJwtTokenService>(instance => new JwtTokenService(jwtConfirutation));
+            //JwtToken service
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+            // Add authentication scheme
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtTokenConfiguration.DEFAULT_SCHEMA;
+                options.DefaultChallengeScheme = JwtTokenConfiguration.DEFAULT_SCHEMA;
+            })
+            .AddScheme<AuthenticationSchemeOptions, JwtAuthenticatorHandler>(JwtTokenConfiguration.DEFAULT_SCHEMA, options => { });
 
             // Add services to the container.
             builder.Services.AddControllers(options =>

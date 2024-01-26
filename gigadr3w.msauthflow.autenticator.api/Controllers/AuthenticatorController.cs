@@ -1,15 +1,16 @@
 ﻿using gigadr3w.msauthflow.autenticator.api.Filters.Attributes;
 using gigadr3w.msauthflow.autenticator.api.Requests;
 using gigadr3w.msauthflow.autenticator.api.Responses;
+using gigadr3w.msauthflow.authenticator.iterator.Configurations;
+using gigadr3w.msauthflow.authenticator.iterator.Filters;
 using gigadr3w.msauthflow.authenticator.iterator.Models;
 using gigadr3w.msauthflow.authenticator.iterator.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Immutable;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace gigadr3w.msauthflow.autenticator.api.Controllers
 {
@@ -42,20 +43,16 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
         {
             _logger.LogInformation("Authentication request required");
 
-            UserModel userModel = await _autehticator.Authenticate(new UserModel { Email = request.Email, Password = request.Password });
+            UserModel userModel = await _autehticator.Authenticate(request.Email, request.Password);
 
             if (userModel.IsAuthorized)
             {
-                List<Claim> claims = new() { new Claim(ClaimTypes.Email, userModel.Email) };
-                claims.AddRange(userModel.Roles.Select(r => new Claim(ClaimTypes.Role, r.Name)));
-
-                JwtGenerationModel jwtTokenModel = new()
+                List<Claim> claims = new List<Claim>(userModel.Roles.Select(r => new Claim(ClaimTypes.Role, r.Name)))
                 {
-                    Claims = claims,
-                    ExpirationTime = TimeSpan.FromDays(1)
+                    new Claim("UserId", userModel.Id.ToString())
                 };
 
-                string jwt = _jwtTokenService.GenerateToken(jwtTokenModel);
+                string jwt = await _jwtTokenService.GenerateToken(userModel.Email, claims);
 
                 return Ok(new AuthenticateResponse { ApiKey = jwt, Email = request.Email });
             }
@@ -63,6 +60,24 @@ namespace gigadr3w.msauthflow.autenticator.api.Controllers
             {
                 return Unauthorized();
             }
+        }
+
+        [HttpDelete]
+        [Route("Dismiss")]
+        [Authorize(AuthenticationSchemes = JwtTokenConfiguration.DEFAULT_SCHEMA)]
+        [SwaggerOperation(
+            Summary = "Credential dismiss",
+            Description = "An authorized request that dismiss the current user authentication",
+            OperationId = "CredentialsDismiss",
+            Tags = new[] { "Authentication" }
+        )]
+        [SwaggerResponse(204, "Valid credentials", typeof(AuthenticateResponse))]
+        [SwaggerResponse(401, "Invalid credentials")]
+        [SwaggerOperationFilter(typeof(SwaggerAuthenticationFilter))]
+        public async Task<IActionResult> Dismiss()
+        {
+            await _jwtTokenService.DismissTokenFor(User);
+            return StatusCode(204);
         }
     }
 }

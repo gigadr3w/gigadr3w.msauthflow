@@ -20,6 +20,7 @@
     <ProjectReference Include="..\gigadr3w.msauthflow.authenticator.iterator\gigadr3w.msauthflow.authenticator.iterator.csproj" />
     <ProjectReference Include="..\gigadr3w.msauthflow.backoffice.iterator\gigadr3w.msauthflow.backoffice.iterator.csproj" />
     <ProjectReference Include="..\gigadr3w.msauthflow.dataaccess.mysql\gigadr3w.msauthflow.dataaccess.mysql.csproj" />
+    <ProjectReference Include="..\gigadr3w.msauthflow.sharedcache.redis\gigadr3w.msauthflow.sharedcache.redis.csproj" />
   </ItemGroup>
 
 </Project>

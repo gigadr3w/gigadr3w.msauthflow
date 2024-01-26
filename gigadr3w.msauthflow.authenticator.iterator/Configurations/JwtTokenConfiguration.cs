@@ -11,5 +11,10 @@
         /// Api Key Header Name
         /// </summary>
         public string ApiKeyHeader { get; set; } = "ApiKey";
+        /// <summary>
+        /// Minutes to token expiration
+        /// </summary>
+        public TimeSpan ValidFor { get; set; }
+
     }
 }

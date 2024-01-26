@@ -17,6 +17,7 @@
     <ProjectReference Include="..\gigadr3w.msauthflow.common\gigadr3w.msauthflow.common.csproj" />
     <ProjectReference Include="..\gigadr3w.msauthflow.dataaccess\gigadr3w.msauthflow.dataaccess.csproj" />
     <ProjectReference Include="..\gigadr3w.msauthflow.entities\gigadr3w.msauthflow.entities.csproj" />
+    <ProjectReference Include="..\gigadr3w.msauthflow.sharedcache\gigadr3w.msauthflow.sharedcache.csproj" />
   </ItemGroup>
 
 </Project>

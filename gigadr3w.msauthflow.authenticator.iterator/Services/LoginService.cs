@@ -8,7 +8,7 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
 {
     public interface ILoginService
     {
-        Task<UserModel> Authenticate(UserModel model);
+        Task<UserModel> Authenticate(string userName, string password);
     }
 
     public class LoginService : ILoginService
@@ -23,44 +23,47 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
         /// </summary>
         /// <param name="model">User model</param>
         /// <returns></returns>
-        public async Task<UserModel> Authenticate(UserModel model)
+        public async Task<UserModel> Authenticate(string userName, string password)
         {
-            if(model.Password == null || model.Email == null) 
+            UserModel userModel = new () { Email = userName };
+
+            if(string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(password)) 
             {
-                model.UnhautorizedMessage = "Email and password are mandatory fields";
-                return model;
+                userModel.UnhautorizedMessage = "Email and password are mandatory fields";
+                return userModel;
             }
 
             // Including Roles
-            IQueryable<User?> users = await _users.Where(u => u.Email == model.Email, new List<Expression<Func<User, object>>> { u => u.Roles });
+            IQueryable<User?> users = await _users.Where(u => u.Email == userModel.Email, new List<Expression<Func<User, object>>> { u => u.Roles });
             
             if(users.Count() > 0) 
             {
                 User? user = users.First();
                 if (user == null)
                 {
-                    model.UnhautorizedMessage = $"User {model.Email} not found";
+                    userModel.UnhautorizedMessage = $"User {userModel.Email} not found";
                 }
                 else 
                 {
-                    if (user.Password != model.Password.Hash256()) 
+                    if (user.Password != password.Hash256()) 
                     {
-                        model.UnhautorizedMessage = "Password mismatch";
+                        userModel.UnhautorizedMessage = "Password mismatch";
                     }
                     else
                     {
                         //valid user
-                        model.Roles = user.Roles.Select(r => new RoleModel { Name = r.Name, Description = r.Description, EnabledService = r.EnabledService }).ToList();
-                        model.IsAuthorized = true;
+                        userModel.Id = user.Id;
+                        userModel.Roles = user.Roles.Select(r => new RoleModel { Name = r.Name, Description = r.Description, EnabledService = r.EnabledService }).ToList();
+                        userModel.IsAuthorized = true;
                     }
                 }
                 
             }
             else
             {
-                model.UnhautorizedMessage = $"User {model.Email} not found";
+                userModel.UnhautorizedMessage = $"User {userModel.Email} not found";
             }
-            return model;
+            return userModel;
         } 
     }
 }
