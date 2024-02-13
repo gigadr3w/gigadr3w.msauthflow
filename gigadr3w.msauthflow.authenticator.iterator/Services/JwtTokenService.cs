@@ -1,5 +1,6 @@
 ﻿using gigadr3w.msauthflow.authenticator.iterator.Configurations;
 using gigadr3w.msauthflow.authenticator.iterator.Models;
+using gigadr3w.msauthflow.common.Extensions;
 using gigadr3w.msauthflow.dataaccess.Interfaces;
 using gigadr3w.msauthflow.sharedcache.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -37,6 +38,14 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
             ILogger<JwtTokenService> logger)
             => (_configuration, _sharedCache, _logger) = (configuration.Value, sharedCache, logger);
 
+        /// <summary>
+        /// If applicable strings to compare coming from redis will be hashed
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        private string HandleComparisonString(string s)
+            => _configuration.EnableHashForRedis ? s.Hash256() : s;
+
         public async Task<AuthenticateResult> Authenticate(string encryptedToken, string authenticationType)
         {
             SymmetricSecurityKey issuerSigningKey = new(Encoding.UTF8.GetBytes(_configuration.SecretKey));
@@ -66,9 +75,9 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
 
                 if (claimEmail == null) return AuthenticateResult.Fail($"No email found in claims");
 
-                string? cachedToken = await _sharedCache.Get<string>(string.Format(_cacheKeyPrefix, claimEmail.Value));
+                string? cachedToken = await _sharedCache.Get<string>(string.Format(_cacheKeyPrefix, HandleComparisonString(claimEmail.Value)));
 
-                if (string.IsNullOrEmpty(cachedToken) || cachedToken != encryptedToken) return AuthenticateResult.Fail("Invalid cache token for current user");
+                if (string.IsNullOrEmpty(cachedToken) || cachedToken != HandleComparisonString(encryptedToken)) return AuthenticateResult.Fail("Invalid cache token for current user");
 
                 if (token != null)
                 {
@@ -115,7 +124,7 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
             string encryptedToken = new JwtSecurityTokenHandler().WriteToken(token);
 
             // Stores current token for the current user key in the shared cache
-            await _sharedCache.Set(string.Format(_cacheKeyPrefix, email), encryptedToken, validFor);
+            await _sharedCache.Set(string.Format(_cacheKeyPrefix, HandleComparisonString(email)), HandleComparisonString(encryptedToken), validFor);
 
             return encryptedToken;
         }
@@ -131,7 +140,7 @@ namespace gigadr3w.msauthflow.authenticator.iterator.Services
             Claim claimEmail = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)
                 ?? throw new KeyNotFoundException($"Claims do not contain email!");
 
-            await _sharedCache.Delete(string.Format(_cacheKeyPrefix, claimEmail.Value));
+            await _sharedCache.Delete(string.Format(_cacheKeyPrefix, HandleComparisonString(claimEmail.Value)));
         }
     }
 }

@@ -15,6 +15,10 @@
         /// Minutes to token expiration
         /// </summary>
         public TimeSpan ValidFor { get; set; }
+        /// <summary>
+        /// The key (email) and the value (authentication token) will be stored as hash value
+        /// </summary>
+        public bool EnableHashForRedis { get; set; } = false;
 
     }
 }
