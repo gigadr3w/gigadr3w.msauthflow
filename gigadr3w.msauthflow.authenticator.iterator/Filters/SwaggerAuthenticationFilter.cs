@@ -1,7 +1,4 @@
-﻿using gigadr3w.msauthflow.authenticator.iterator.Configurations;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace gigadr3w.msauthflow.authenticator.iterator.Filters
